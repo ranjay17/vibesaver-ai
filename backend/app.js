@@ -8,15 +8,30 @@ const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
 
-connectDB();
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://vibesaver-ai.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["vibesaver-ai.vercel.app", "http://localhost:5173"],
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   }),
 );
+
+connectDB();
 app.use(express.json());
 
 app.use("/api/tasks", taskRoutes);
